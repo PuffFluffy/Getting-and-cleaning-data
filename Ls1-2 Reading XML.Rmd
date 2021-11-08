@@ -1,0 +1,88 @@
+---
+title: "Ls1-2 Reading XML"
+output: html_document
+---
+
+#Reading XML
+
+>XML: Extensible Markup Language
+
+* Frequently used to store structured data
+* Particularly widely used in Internet applications
+* Extracting XML is the basis for most web scarping
+* Components:
+  + Markup: labels that give the text structure
+  + Connect: the actual text of the document
+
+>Tags, elements and attributes
+
+* Tags correspond to general labels
+  + Start tags <section>
+  + End tags </section>
+  + Empty tags <line-break />
+* Elements are specific examples of tags
+  + <Greeting> Hello, world </Greeting>
+* Attributes are components of the label
+  + <step number="3"> Connect A to B. </step>
+  
+[ XML example ](https://www.w3schools.com/xml/simple.xml)
+
+## Read the file into R
+>XML package
+
+```{r}
+library(XML)
+library(xml2)
+fileUrl <- "./simple.xml"
+doc<- xmlTreeParse ( fileUrl, isURL = TRUE,useInternalNodes = TRUE)
+rootNode<-xmlRoot(doc)
+xmlName(rootNode)
+```
+```{r}
+names(rootNode)
+rootNode[[1]]
+rootNode[[1]][[1]]
+```
+
+>XPath
+
+* */node*: Top level node
+* *//node*: Node at any level
+* *node [@attr-name]*: Node with an attribute name
+* *node [@attr-name="bob"]*: Node with attribute name attr-name="bob"
+
+[ Further Info](.\XML.pdf)
+
+```{r}
+xpathSApply(rootNode,"//name",xmlValue)
+xpathSApply(rootNode,"//price",xmlValue)
+```
+
+###Example: Baltimore Ravens
+
+[updates1](https://github.com/lgreski/datasciencectacontent/blob/master/markdown/cleaningData-demystifyingHTMLParsing.md)
+
+```{r}
+library(RCurl)
+fileUrl <- "https://www.espn.com/nfl/team/_/name/bal/baltimore-ravens" 
+xData <- getURL(fileUrl) 
+doc <- htmlTreeParse(xData,useInternalNodes = TRUE)
+scores<-xpathSApply(doc,"//div[@class='score']",xmlValue)
+#div[@class='score']: div items with its class as score
+teams <- xpathSApply(doc, "//div[@class='game-info']", xmlValue) 
+```
+
+Or using **xml2 package**
+
+```{r}
+library(xml2)
+suppressWarnings(dx<-read_xml("https://www.espn.com/nfl/team/_/name/bal/baltimore-ravens",
+                              as_html=TRUE))
+teams<-as.character(xml_contents(xml_find_all(dx,"//div[@class='game-info']")))
+scores<-as.character(xml_contents(xml_find_all(dx,"//div[@class='score']")))
+```
+
+
+[updates2](https://github.com/lgreski/datasciencectacontent/blob/master/markdown/cleaningData-demystifyingHTMLParsing.md)
+
+[Baltimore Ravens](https://www.espn.com/nfl/team/_/name/bal/baltimore-ravens)
